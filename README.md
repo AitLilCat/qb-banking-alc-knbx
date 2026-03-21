@@ -15,10 +15,10 @@ A modern banking system for QBCore servers, focused on clean design, performance
 ## 📊 Dashboard
 
 ### Light Mode
-![Dashboard Light](/main/.github/Assets/DashboardLight.png)
+![Dashboard Light](.github/Assets/DashboardLight.png)
 
 ### Dark Mode
-![Dashboard Dark](/main/.github/Assets/DashboardDark.png)
+![Dashboard Dark](/.github/Assets/DashboardDark.png)
 
 Light and dark mode can be toggled in-game via the **settings (⚙️) button**.
 
@@ -26,7 +26,7 @@ Light and dark mode can be toggled in-game via the **settings (⚙️) button**.
 
 ## 💸 Money Management
 
-![Money Management](/main/.github/Assets/MoneyManagement.gif)
+![Money Management](/.github/Assets/MoneyManagement.gif)
 
 - Account creation and management  
 - Deposit, withdraw, transfer  
