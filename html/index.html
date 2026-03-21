@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>qb-banking</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.2/axios.min.js"></script>
+</head>
+<body data-theme="light">
+<div id="app" v-cloak>
+    <transition name="fade">
+        <div class="bank-overlay" v-if="isBankOpen || isATMOpen || showPinPrompt || showOnboarding">
+            <div class="bank-shell" :class="{ atm: isATMOpen && !isBankOpen && !showPinPrompt }">
+                <div class="top-banner" v-if="!showOnboarding && !showPinPrompt">
+                    <span>{{ t('bank_env') }}</span>
+                    <button class="banner-btn" @click="setActiveView('money')">{{ t('start_now') }}</button>
+                </div>
+                <div class="top-banner" v-else>
+                    <span>{{ brandName }}.</span>
+                </div>
+
+                <template v-if="showOnboarding">
+                    <div class="onboard-wrap">
+                        <div class="onboard-card" v-if="onboardingStep === 'welcome'">
+                            <div class="onboard-brand">{{ brandName }}<span>.</span></div>
+                            <h1>{{ t('welcome_title') }}</h1>
+                            <p>{{ t('welcome_subtitle') }}</p>
+                            <button class="primary-btn xl-btn" @click="onboardingStep = 'language'">{{ t('welcome_button') }}</button>
+                        </div>
+
+                        <div class="onboard-card" v-else>
+                            <div class="onboard-brand">{{ brandName }}<span>.</span></div>
+                            <h2>{{ t('choose_language') }}</h2>
+                            <p>{{ t('language_subtitle') }}</p>
+
+                            <div class="lang-grid">
+                                <button class="lang-card" @click="selectLanguage('nl')">
+                                    <div class="flag">🇳🇱</div>
+                                    <strong>Nederlands</strong>
+                                </button>
+                                <button class="lang-card" @click="selectLanguage('en')">
+                                    <div class="flag">🇬🇧</div>
+                                    <strong>EN English</strong>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <template v-else-if="showPinPrompt">
+                    <div class="pin-wrap">
+                        <div class="pin-card">
+                            <div class="pin-logo">{{ brandName }}<span>.</span></div>
+                            <h2>{{ t('pin_confirm') }}</h2>
+                            <p>{{ t('pin_subtitle') }}</p>
+                            <input type="password" maxlength="4" v-model="enteredPin" placeholder="••••" @keyup.enter="pinPrompt(enteredPin)" />
+                            <div class="pin-actions">
+                                <button class="primary-btn" @click="pinPrompt(enteredPin)">{{ t('confirm') }}</button>
+                                <button class="ghost-btn" @click="closeApplication()">{{ t('close') }}</button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <template v-else>
+                    <aside class="sidebar">
+                        <div class="brand-row">
+                            <div class="brand">{{ brandName }}<span>.</span></div>
+                            <div class="brand-badge">{{ currentLanguage.toUpperCase() }}</div>
+                        </div>
+
+                        <div class="user-card">
+                            <div class="user-avatar">{{ initials(playerName) }}</div>
+                            <div>
+                                <div class="muted tiny">{{ t('account') }}</div>
+                                <div class="user-name">{{ playerName || t('player') }}</div>
+                            </div>
+                        </div>
+
+                        <div class="sidebar-section">
+                            <div class="sidebar-title">{{ t('accounts') }}</div>
+                            <div class="account-list">
+                                <button class="account-item"
+                                    v-for="account in accounts"
+                                    :key="account.name"
+                                    :class="{ selected: account.name === selectedAccountStatement }"
+                                    @click="selectAccount(account)">
+                                    <span class="account-name">{{ prettifyAccountName(account.name) }}</span>
+                                    <strong>{{ formatEuro(account.balance) }}</strong>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="sidebar-section" v-if="isBankOpen">
+                            <button class="nav-btn" :class="{ active: activeView === 'home' }" @click="setActiveView('home')">{{ t('dashboard') }}</button>
+                            <button id="nav-money-button" class="nav-btn" :class="{ active: activeView === 'money' }" @click="setActiveView('money')">{{ t('money_management') }}</button>
+                            <button class="nav-btn" :class="{ active: activeView === 'invoices' }" @click="setActiveView('invoices')">{{ t('invoices') }}</button>
+                        </div>
+
+                        <div class="sidebar-footer">
+                            <div class="mini-stat">
+                                <span class="muted">{{ t('cash') }}</span>
+                                <strong>{{ formatEuro(playerCash) }}</strong>
+                            </div>
+                            <div class="mini-stat">
+                                <span class="muted">{{ t('account_number') }}</span>
+                                <strong>{{ accountNumber || "-" }}</strong>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <main class="main">
+                        <div class="main-header">
+                            <div>
+                                <h1>{{ pageTitle }}</h1>
+                                <p>{{ pageSubtitle }}</p>
+                            </div>
+                            <div class="header-actions">
+                                <button id="gear-button" class="icon-circle" @click="showSettings = true" title="Settings / Instellingen">⚙</button>
+                                <button class="ghost-btn" @click="closeApplication()">{{ t('close') }}</button>
+                            </div>
+                        </div>
+
+                        <div v-if="notification" class="notification-container">
+                            <div :class="['notification', notification.type]">{{ notification.message }}</div>
+                        </div>
+
+                        <template v-if="isATMOpen && !isBankOpen">
+                            <div class="cards-row atm-row centered-grid">
+                                <div class="stat-card teal">
+                                    <span>{{ t('atm_account') }}</span>
+                                    <strong>{{ formatEuro(selectedMoneyAccount?.balance || accounts[0]?.balance || 0) }}</strong>
+                                </div>
+                                <div class="stat-card navy">
+                                    <span>{{ t('cash') }}</span>
+                                    <strong>{{ formatEuro(playerCash) }}</strong>
+                                </div>
+                            </div>
+
+                            <div class="panel centered-panel">
+                                <div class="panel-header">
+                                    <h2>{{ t('atm_actions') }}</h2>
+                                </div>
+                                <div class="form-grid single">
+                                    <div class="field">
+                                        <label>{{ t('account') }}</label>
+                                        <select v-model="selectedMoneyAccount">
+                                            <option :value="null">{{ t('choose_account') }}</option>
+                                            <option v-for="account in accounts" :key="account.name" :value="account">{{ prettifyAccountName(account.name) }}</option>
+                                        </select>
+                                    </div>
+                                    <div class="field">
+                                        <label>{{ t('amount') }}</label>
+                                        <input type="number" min="1" v-model="selectedMoneyAmount" placeholder="500" />
+                                    </div>
+                                    <div class="field">
+                                        <label>{{ t('description') }}</label>
+                                        <input type="text" v-model="moneyReason" :placeholder="t('atm_reason')" />
+                                    </div>
+                                </div>
+                                <div class="button-row">
+                                    <button class="primary-btn" @click="withdrawMoney()">{{ t('withdraw') }}</button>
+                                    <button class="ghost-btn" @click="depositMoney()">{{ t('deposit') }}</button>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template v-if="isBankOpen">
+                            <section v-if="activeView === 'home'">
+                                <div class="cards-row home-top centered-grid">
+                                    <div class="hero-card">
+                                        <div class="hero-top">
+                                            <span>{{ t('payment_account') }}</span>
+                                            <span class="chip">Live</span>
+                                        </div>
+                                        <div class="hero-money">{{ formatEuro(currentAccountBalance) }}</div>
+                                        <div class="hero-bottom">
+                                            <span>{{ prettifyAccountName(selectedAccountStatement) }}</span>
+                                            <span>{{ accountNumber }}</span>
+                                        </div>
+                                        <div class="hero-actions" v-if="selectedAccountStatement !== 'checking'">
+                                            <button class="danger-btn" @click="promptDeleteSelectedAccount()">🗑 {{ t('close_account') }}</button>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card rose">
+                                        <span>{{ t('cash') }}</span>
+                                        <strong>{{ formatEuro(playerCash) }}</strong>
+                                    </div>
+                                    <div class="stat-card amber">
+                                        <span>{{ t('income_monthly') }}</span>
+                                        <strong>{{ formatEuro(monthlyIncomeEstimate) }}</strong>
+                                    </div>
+                                    <div class="stat-card navy">
+                                        <span>{{ t('expenses') }}</span>
+                                        <strong>{{ formatEuro(totalWithdrawals) }}</strong>
+                                    </div>
+                                </div>
+
+                                <div class="content-grid home-grid centered-grid">
+                                    <div class="panel">
+                                        <div class="panel-header">
+                                            <h2>{{ t('account_trend') }}</h2>
+                                            <span class="muted">{{ prettifyAccountName(selectedAccountStatement) }}</span>
+                                        </div>
+                                        <div class="line-chart-wrap">
+                                            <svg viewBox="0 0 1000 280" class="line-chart" preserveAspectRatio="none">
+                                                <defs>
+                                                    <linearGradient id="lineFill" x1="0" x2="0" y1="0" y2="1">
+                                                        <stop offset="0%" stop-color="rgba(20,184,177,0.22)"/>
+                                                        <stop offset="100%" stop-color="rgba(20,184,177,0.02)"/>
+                                                    </linearGradient>
+                                                </defs>
+                                                <path class="chart-area" :d="chartAreaPath"></path>
+                                                <path class="chart-line income-line" :d="chartPath"></path>
+                                                <g v-for="point in chartPoints" :key="point.x">
+                                                    <circle :cx="point.x" :cy="point.y" r="5" class="chart-dot"></circle>
+                                                </g>
+                                            </svg>
+                                        </div>
+                                        <div class="chart-footer">
+                                            <div class="mood-box" :class="moodStatus.class">
+                                                <span class="mood-emoji">{{ moodStatus.emoji }}</span>
+                                                <div>
+                                                    <strong>{{ moodStatus.label }}</strong>
+                                                    <p>{{ moodStatus.text }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="panel">
+                                        <div class="panel-header">
+                                            <h2>{{ t('latest_transactions') }}</h2>
+                                        </div>
+                                        <div class="transaction-list">
+                                            <div class="transaction-item" v-for="statement in accountStatements.slice(0, 8)" :key="statement.id">
+                                                <div class="tx-icon" :class="statement.type">{{ statement.type === 'deposit' ? '+' : '-' }}</div>
+                                                <div class="tx-main">
+                                                    <strong>{{ statement.reason }}</strong>
+                                                    <span>{{ formatDate(statement.date) }}</span>
+                                                </div>
+                                                <div class="tx-amount" :class="statement.type">{{ amountPrefix(statement.type) }}{{ formatEuro(statement.amount) }}</div>
+                                            </div>
+                                            <div v-if="accountStatements.length === 0" class="empty-state">{{ t('no_transactions') }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            
+<section v-if="activeView === 'money'">
+    <div class="money-board centered-grid">
+        <div id="section-geldbeheer" class="panel board-money">
+            <div class="panel-header">
+                <h2>{{ t('money_management') }}</h2>
+                <span class="muted">{{ t('deposit_and_withdraw') }}</span>
+            </div>
+            <div class="form-grid">
+                <div class="field">
+                    <label>{{ t('account') }}</label>
+                    <select v-model="selectedMoneyAccount">
+                        <option :value="null">{{ t('choose_account') }}</option>
+                        <option v-for="account in accounts" :key="account.name" :value="account">{{ prettifyAccountName(account.name) }}</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>{{ t('amount') }}</label>
+                    <input type="number" min="1" v-model="selectedMoneyAmount" placeholder="500" />
+                </div>
+                <div class="field full">
+                    <label>{{ t('description') }}</label>
+                    <input type="text" v-model="moneyReason" :placeholder="t('salary_rent_atm')" />
+                </div>
+            </div>
+            <div class="button-row">
+                <button class="primary-btn" @click="depositMoney()">{{ t('deposit') }}</button>
+                <button class="ghost-btn" @click="withdrawMoney()">{{ t('withdraw') }}</button>
+            </div>
+        </div>
+
+        <div id="section-overmaken" class="panel board-transfer">
+            <div class="panel-header">
+                <h2>{{ t('transfer') }}</h2>
+                <span class="muted">{{ t('internal_and_external') }}</span>
+            </div>
+            <div class="money-manage-grid compact-grid">
+                <div id="section-internextern-internal" class="sub-panel">
+                    <h3>{{ t('internal_transfer') }}</h3>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label>{{ t('from_account') }}</label>
+                            <select v-model="internalFromAccount">
+                                <option :value="null">{{ t('choose_account') }}</option>
+                                <option v-for="account in accounts" :key="account.name" :value="account">{{ prettifyAccountName(account.name) }}</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>{{ t('to_account') }}</label>
+                            <select v-model="internalToAccount">
+                                <option :value="null">{{ t('choose_account') }}</option>
+                                <option v-for="account in accounts" :key="account.name" :value="account">{{ prettifyAccountName(account.name) }}</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>{{ t('amount') }}</label>
+                            <input type="number" min="1" v-model="internalTransferAmount" placeholder="250" />
+                        </div>
+                        <div class="field full">
+                            <label>{{ t('description') }}</label>
+                            <input type="text" v-model="transferReason" :placeholder="t('description')" />
+                        </div>
+                    </div>
+                    <div class="button-row">
+                        <button class="primary-btn" @click="internalTransfer()">{{ t('transfer') }}</button>
+                    </div>
+                </div>
+
+                <div id="section-internextern-external" class="sub-panel">
+                    <h3>{{ t('external_transfer') }}</h3>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label>{{ t('from_account') }}</label>
+                            <select v-model="externalFromAccount">
+                                <option :value="null">{{ t('choose_account') }}</option>
+                                <option v-for="account in accounts" :key="account.name" :value="account">{{ prettifyAccountName(account.name) }}</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>{{ t('to_account_number') }}</label>
+                            <input type="text" v-model="externalAccountNumber" :placeholder="t('citizenid_or_account')" />
+                        </div>
+                        <div class="field">
+                            <label>{{ t('amount') }}</label>
+                            <input type="number" min="1" v-model="externalTransferAmount" placeholder="250" />
+                        </div>
+                        <div class="field full">
+                            <label>{{ t('description') }}</label>
+                            <input type="text" v-model="transferReason" :placeholder="t('description')" />
+                        </div>
+                    </div>
+                    <div class="button-row">
+                        <button class="primary-btn" @click="externalTransfer()">{{ t('send') }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-rekeningen" class="panel board-accounts">
+            <div class="panel-header">
+                <h2>{{ t('accounts') }}</h2>
+                <span class="muted">{{ t('new_account_and_card') }}</span>
+            </div>
+            <div class="money-manage-grid compact-grid">
+                <div class="sub-panel">
+                    <h3>{{ t('new_account') }}</h3>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label>{{ t('name') }}</label>
+                            <input type="text" v-model="createAccountName" :placeholder="t('savings_business')" />
+                        </div>
+                        <div class="field">
+                            <label>{{ t('starting_amount') }}</label>
+                            <input type="number" min="0" v-model="createAccountAmount" placeholder="0" />
+                        </div>
+                    </div>
+                    <div class="button-row">
+                        <button class="primary-btn" @click="openAccount()">{{ t('open_account') }}</button>
+                    </div>
+                </div>
+
+                <div class="sub-panel">
+                    <h3>{{ t('debit_card') }}</h3>
+                    <div class="form-grid single">
+                        <div class="field">
+                            <label>{{ t('pin_code') }}</label>
+                            <input type="password" maxlength="4" v-model="debitPin" placeholder="1234" />
+                        </div>
+                    </div>
+                    <div class="button-row">
+                        <button class="primary-btn" @click="orderDebitCard()">{{ t('order_card') }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-tikkie" class="panel board-tikkie">
+            <div class="panel-header">
+                <h2>{{ t('tikkie') }}</h2>
+                <span class="muted">{{ t('frontend_preview') }}</span>
+            </div>
+            <div class="content-grid single-grid">
+                <div class="tikkie-card">
+                    <div class="tikkie-brand">tikje</div>
+                    <div class="tikkie-amount">{{ formatEuro(selectedMoneyAmount || 0) }}</div>
+                    <div class="tikkie-code">TK-{{ accountNumber || '0000' }}</div>
+                    <p>{{ t('tikkie_helper') }}</p>
+                </div>
+                <div class="sub-panel">
+                    <h3>{{ t('quick_request') }}</h3>
+                    <div class="form-grid single">
+                        <div class="field">
+                            <label>{{ t('amount') }}</label>
+                            <input type="number" min="1" v-model="selectedMoneyAmount" placeholder="125" />
+                        </div>
+                        <div class="field">
+                            <label>{{ t('description') }}</label>
+                            <input type="text" v-model="moneyReason" :placeholder="t('tikkie_examples')" />
+                        </div>
+                    </div>
+                    <div class="button-row">
+                        <button class="ghost-btn" @click="addNotification(t('tikkie_ready'), 'success')">{{ t('generate_preview') }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+                            <section v-if="activeView === 'invoices'">
+                                <div class="panel centered-grid wide-panel">
+                                    <div class="panel-header">
+                                        <h2>{{ t('invoices_penalties') }}</h2>
+                                        <span class="muted">{{ t('open_costs') }}</span>
+                                    </div>
+                                    <div class="invoice-list">
+                                        <div v-for="invoice in invoiceItems" :key="invoice.id" class="invoice-item">
+                                            <div class="invoice-main">
+                                                <strong>{{ invoice.title }}</strong>
+                                                <span>{{ invoice.description }}</span>
+                                            </div>
+                                            <div class="invoice-right">
+                                                <div class="invoice-amount">{{ formatEuro(invoice.amount) }}</div>
+                                                <button class="ghost-btn small-btn" @click="payInvoice(invoice)">{{ t('pay') }}</button>
+                                            </div>
+                                        </div>
+                                        <div v-if="invoiceItems.length === 0" class="empty-state">{{ t('no_invoices') }}</div>
+                                    </div>
+                                </div>
+                            </section>
+                        </template>
+                    </main>
+
+                    <div class="modal-overlay" v-if="showSettings">
+                        <div class="modal-card">
+                            <div class="panel-header">
+                                <h2>{{ t('settings') }}</h2>
+                            </div>
+                            <div class="settings-grid">
+                                <div class="setting-group">
+                                    <label>{{ t('language') }}</label>
+                                    <div class="segmented">
+                                        <button :class="{active: currentLanguage==='nl'}" @click="changeLanguage('nl')">🇳🇱 Nederlands</button>
+                                        <button :class="{active: currentLanguage==='en'}" @click="changeLanguage('en')">EN English</button>
+                                    </div>
+                                </div>
+                                <div class="setting-group">
+                                    <label>{{ t('theme') }}</label>
+                                    <div class="segmented">
+                                        <button :class="{active: theme==='light'}" @click="changeTheme('light')">{{ t('light_mode') }}</button>
+                                        <button :class="{active: theme==='dark'}" @click="changeTheme('dark')">{{ t('dark_mode') }}</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="button-row">
+                                <button class="ghost-btn" @click="showSettings=false">{{ t('close') }}</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-overlay" v-if="showDeleteConfirm">
+                        <div class="modal-card warning-card">
+                            <div class="panel-header">
+                                <h2>{{ t('confirm_delete_title') }}</h2>
+                            </div>
+                            <p class="confirm-text">{{ t('confirm_delete_text') }}</p>
+                            <div class="button-row center-row">
+                                <button class="primary-btn" @click="deleteSelectedAccountConfirmed()">{{ t('yes_delete') }}</button>
+                                <button class="danger-btn subtle-danger" @click="showDeleteConfirm=false">{{ t('no_keep') }}</button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </transition>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
