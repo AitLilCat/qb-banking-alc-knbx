@@ -8,7 +8,7 @@ A modern banking system for QBCore servers, focused on clean design, performance
 
 ## 🎬 Preview
 
-![Intro](/.github/assets/Intro.gif)
+![Intro](.github/Assets/Intro.gif)
 
 ---
 
