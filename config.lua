@@ -25,7 +25,7 @@ Config = {
 Config.Branding = {
     name = 'KNBX.',
     shortName = 'KNBX',
-    country = 'NL'
+    country = 'EN'
 }
 
 

@@ -1,79 +1,66 @@
-## ALC / KNBX Edition
+# 🏦 KNBX Banking — qb-banking-alc
 
-This version is a **modified and redesigned build of qb-banking**, focused on improving both user experience and developer usability.
+> Ready to replace the original qb-banking.
 
-### What has changed
+A modern banking system for QBCore servers, focused on clean design, performance, and roleplay immersion.
 
-* Modern **KNBX-inspired UI redesign**
-* Improved layout, spacing, and visual hierarchy
-* Cleaner and more structured frontend code
-* Better separation between UI sections (Dashboard, Money, Transactions)
-* Refined interaction flow for a smoother experience
+---
 
-### Frontend approach
+## 🎬 Preview
 
-This build uses a **lightweight frontend stack**:
+![Intro](./.github/assets/Intro.gif)
 
-* Pure HTML, CSS, and Vanilla JavaScript
-* No external frameworks or UI libraries
-* Optimized for FiveM NUI performance
+---
 
-This keeps the interface fast, responsive, and easy to maintain.
+## 📊 Dashboard
 
-### Why this version
+### Light Mode
+![Dashboard Light](./.github/assets/DashboardLight.png)
 
-Compared to the original qb-banking:
+### Dark Mode
+![Dashboard Dark](./.github/assets/DashboardDark.png)
 
-* More modern and intuitive design
-* Easier to customize and extend
-* Cleaner structure for developers
-* Built with scalability in mind
+Light and dark mode can be toggled in-game via the **settings (⚙️) button**.
 
-This is not just a visual change, but a **structural improvement of the UI layer**.
+---
 
-### Modularity
+## 💸 Money Management
 
-The frontend is built to be **modular**:
+![Money Management](./.github/assets/MoneyManagement.gif)
 
-* Components are reusable
-* Sections are logically separated
-* Styling is predictable and organized
-* New features can be added without breaking existing ones
+- Account creation and management  
+- Deposit, withdraw, transfer  
+- Debit card system (PIN-based)  
+- Tikkie-style request preview  
 
-### Credits
+---
 
-* Original system: qb-banking (QBCore) by Joshua Eger
-* UI concept, redesign, and modifications: AitLilCat (ALC)
+## 🧠 Technical
 
-KNBX-inspired concept prototype and frontend restructuring by AitLilCat.
+- Vue-inspired structure (not a full framework)
+- Built for FiveM NUI (HTML / CSS / JS)
+- Lightweight and easily extendable
 
+---
 
-# Original Section 
-# QB-Banking
+## 🌍 Language
 
-## Features
-- Handles all player interaction with bank/job/gang/shared accounts
-- ATM and bank card integration
-- Shared accounts between players
-- Auto creation of job/gang accounts on bank first open
-- Boss-only access to job/gang accounts
+Automatic language handling:
 
-Documentation: https://docs.qbcore.org/qbcore-documentation/qbcore-resources/qb-banking
+- Player preference (saved)
+- Server config (`Config.Branding.country`)
+- Fallback system
 
-# License
+Supported:
+- EN / NL
 
-    QBCore Framework
-    Copyright (C) 2021 Joshua Eger
+---
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+## ⚙️ Configuration
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>
+```lua
+Config.Branding = {
+    name = 'KNBX.',
+    shortName = 'KNBX',
+    country = 'EN'
+}

@@ -242,7 +242,7 @@ const bankingApp = Vue.createApp({
       onboardingStep: "welcome",
       showSettings: false,
       showDeleteConfirm: false,
-      currentLanguage: "nl",
+      currentLanguage: "en",
       theme: "light",
       notification: null,
       activeView: "home",
@@ -432,17 +432,27 @@ const bankingApp = Vue.createApp({
       this.playerCash = Number(playerData.money?.cash || 0);
       this.playerJob = playerData.job || null;
       this.playerJobPayment = Number(playerData.job?.payment || 0);
+
+      // 🔥 FIXED LANGUAGE LOGIC
+      const country = (bankData.branding?.country || "EN").toLowerCase();
+
       this.currentLanguage =
         bankData.language === "en" || bankData.language === "nl"
           ? bankData.language
-          : "nl";
+          : country === "nl"
+            ? "nl"
+            : "en";
+
       this.theme =
         bankData.theme === "dark" || bankData.theme === "light"
           ? bankData.theme
           : "light";
+
       document.body.setAttribute("data-theme", this.theme);
+
       this.brandName =
         (bankData.branding && bankData.branding.shortName) || "KNBX";
+
       this.accounts = [];
       (bankData.accounts || []).forEach((account) => {
         this.accounts.push({
