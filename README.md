@@ -64,3 +64,15 @@ Config.Branding = {
     shortName = 'KNBX',
     country = 'EN'
 }
+
+-- UI Control (KNBX)
+Config.UI = {
+    ShowGear = true,
+    ShowTikkie = true,
+    ShowRekeningen = true,
+    ShowGeldBeheer = true,
+    ShowStortenOpnemen = true,
+    ShowOvermaken = true,
+    ShowInternExtern = true
+}
+
