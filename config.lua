@@ -1,9 +1,13 @@
 Config = {
+    Debug = false,
     useTarget = GetConvar('UseTarget', 'false') == 'true',
     atmModels = { 'prop_atm_01', 'prop_atm_02', 'prop_atm_03', 'prop_fleeca_atm' },
     useDailyLimit = true,
     dailyLimit = 5000,
     maxAccounts = 2,
+    MaxTransactionAmount = 100000000,
+    TransactionCooldown = 1000,
+    MaxAccountNameLength = 50,
     blipInfo = {
         name = 'Bank',
         sprite = 108,
@@ -28,8 +32,6 @@ Config.Branding = {
     country = 'EN'
 }
 
-
--- UI Control (KNBX)
 Config.UI = {
     ShowGear = true,
     ShowTikkie = true,

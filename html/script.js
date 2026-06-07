@@ -1,46 +1,7 @@
 /**
- * |--------------------------------------------------------------------------
- * | qb-banking-ALC-KNBX (Client Script)
- * |--------------------------------------------------------------------------
- *
- * Thank you for using this modular banking system.
- * This script handles UI interactions, NUI callbacks, and data flow.
- *
- * Structure guide:
- *
- * 1. Event Listeners
- *    → NUI events, window messages, button bindings
- *
- * 2. UI Handlers
- *    → Open/close panels, navigation switching
- *
- * 3. Data Rendering
- *    → Transactions, balances, account data
- *
- * 4. Actions
- *    → Transfers, requests, user interactions
- *
- * 5. Helpers
- *    → Utility functions, formatting, reusable logic
- *
- * 6. State Management
- *    → Current UI state, selected accounts, caching
- *
- * |--------------------------------------------------------------------------
- *
- * Notes:
- * - Keep logic separated and readable
- * - Avoid mixing UI and data logic when extending
- * - Reuse helper functions where possible
- *
- * |--------------------------------------------------------------------------
- *
- * ALC // AitLilCat
- * KNBX-inspired concept prototype & modified build
- *
- * Thanks for using this template — go build something solid with it.
- *
- * |--------------------------------------------------------------------------
+ * qb-banking-alc-knbx client UI script.
+ * Handles NUI messages, interface state, settings and banking actions.
+ * Modified by AitLilCat / ALC for the public GPL-3.0 community release.
  */
 
 const translations = {
@@ -433,7 +394,7 @@ const bankingApp = Vue.createApp({
       this.playerJob = playerData.job || null;
       this.playerJobPayment = Number(playerData.job?.payment || 0);
 
-      // 🔥 FIXED LANGUAGE LOGIC
+      // Language preference fallback.
       const country = (bankData.branding?.country || "EN").toLowerCase();
 
       this.currentLanguage =
@@ -1015,4 +976,4 @@ const bankingApp = Vue.createApp({
   });
 })();
 
-// End of file — ALC
+// End of file: ALC

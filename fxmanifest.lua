@@ -2,13 +2,14 @@ fx_version 'cerulean'
 game 'gta5'
 lua54 'yes'
 
--- qb-banking-ALC-KNBX (Free to use)
--- KNBX-inspired modular banking redesign by AitLilCat (ALC)
--- Based on qb-banking by Joshua Eger
+-- qb-banking-alc-knbx
+-- Free GPL-3.0 QBCore banking UI and UX overhaul by AitLilCat / ALC.
+-- Based on qbcore-framework/qb-banking and original QBCore contributors.
 
-author 'AitLilCat (ALC)'
-description 'qb-banking ALC KNBX Edition - Modular, lightweight banking UI redesign with Dutch-inspired fintech styling'
-version '2.1.0-alc'
+author 'AitLilCat / ALC'
+description 'Free QBCore banking UI and UX overhaul based on qb-banking'
+version '1.0.0'
+
 shared_scripts {
     '@qb-core/shared/locale.lua',
     'locales/en.lua',
@@ -35,5 +36,5 @@ ui_page 'html/index.html'
 files {
     'html/index.html',
     'html/script.js',
-    'html/style.css',
+    'html/style.css'
 }

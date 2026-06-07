@@ -1,0 +1,28 @@
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+.cache/
+tmp/
+temp/
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node and frontend tooling if used later
+node_modules/
+dist/
+build/
+
+# Release archives
+*.zip
+*.rar
+*.7z

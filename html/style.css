@@ -1,51 +1,7 @@
 /*
-|--------------------------------------------------------------------------
-| qb-banking-ALC-KNBX (Style Sheet)
-|--------------------------------------------------------------------------
-|
-| Thank you for using this modular banking UI template.
-| This project is designed to be clean, extendable, and easy to modify.
-|
-| Structure guide:
-|
-| 1. Base / Reset
-|    → Global styles, fonts, body, default spacing
-|
-| 2. Layout
-|    → Main containers, panels, grid systems
-|
-| 3. Navigation
-|    → Sidebar / navbar / menu buttons
-|
-| 4. Components
-|    → Cards, buttons, inputs, widgets
-|
-| 5. Sections
-|    → Dashboard, Transactions, Money Management, etc.
-|
-| 6. Utilities
-|    → Helper classes (flex, spacing, visibility)
-|
-| 7. Animations
-|    → Transitions, hover effects, micro-interactions
-|
-|--------------------------------------------------------------------------
-|
-| Notes:
-| - Keep styles modular when adding new features
-| - Reuse existing classes before creating new ones
-| - Maintain spacing and alignment consistency
-|
-|--------------------------------------------------------------------------
-|
-| ALC // AitLilCat
-| KNBX-inspired concept prototype & UI modification
-|
-| Appreciate you using this template 💙
-| Build something clean with it.
-|
-|--------------------------------------------------------------------------
-*/
+ * qb-banking-alc-knbx UI styles.
+ * Public GPL-3.0 community release by AitLilCat / ALC.
+ */
 
 :root {
     --bg: rgba(7, 18, 28, 0.55);
@@ -1629,7 +1585,7 @@ body[data-theme="dark"] .warning-box p {
     color: var(--muted) !important;
 }
 
-/* REAL FINAL: fix mood box variants */
+/* Mood box variants */
 body[data-theme="dark"] .mood-box,
 body[data-theme="dark"] .mood-box.warn,
 body[data-theme="dark"] .mood-box.bad {
@@ -1643,4 +1599,4 @@ body[data-theme="dark"] .mood-box p {
     color: var(--muted) !important;
 }
 
-/* End of file — ALC */
+/* End of file: ALC */
